@@ -19,10 +19,19 @@ npm install irc-connect
 
 #### Use it
 ```javascript
-var irc = require("./connect");
+var irc = require("irc-connect");
 
 var freenode = irc.connect('irc.freenode.net');
-freenode.on('', );
+
+freenode.on('connect', function(err){
+  console.log('You are connected!');
+})
+.on('NOTICE', function(event){
+  console.log(JSON.stringify(event));
+})
+.on('error', function(err){
+  console.trace(err);
+});
 ```
 <br>
 <br>
