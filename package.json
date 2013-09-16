@@ -1,0 +1,35 @@
+{
+  "name": "irc-connect",
+  "version": "1.8.5",
+  "description": "Minimal IRC connection that simply emits event objects. Plugin modules can do the rest.",
+  "main": "connect.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/williamwicks/irc-connect.git"
+  },
+  "keywords": [
+    "irc",
+    "plugin",
+    "connection",
+    "username",
+    "password",
+    "nick",
+    "ping",
+    "pong",
+    "events",
+    "emit"
+  ],
+  "author": "William Wicks",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/williamwicks/irc-connect/issues"
+  },
+  "dependencies": {
+    "debug": "~0",
+    "irc-replies": "~1",
+    "eachline": "~1"
+  }
+}
