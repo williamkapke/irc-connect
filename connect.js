@@ -101,7 +101,7 @@ var irc = module.exports = {
 		client.once('connect', function onconnect() {
 			var temp = irc._temp();
 			this.send('NICK ', temp);
-			this.send('USER irc-connet 0 * :', options.name||'irc-connect user');
+			this.send('USER irc-cnct 0 * :', options.name||'irc-connect user');
 		});
 		client.use(require('./nick'));
 
