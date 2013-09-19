@@ -11,6 +11,7 @@ Plugin modules can (and should) do the rest.
 
   Now you can whip up a lightweight bot without all the baggage.
 
+Channel support can be added with the [irc-channels](https://github.com/williamwicks/irc-channels) module!
 
 #### Install it
 ```
@@ -20,18 +21,40 @@ npm install irc-connect
 #### Use it
 ```javascript
 var irc = require("irc-connect");
-
-var freenode = irc.connect('irc.freenode.net');
-
-freenode.on('connect', function(err){
-  console.log('You are connected!');
-})
-.on('NOTICE', function(event){
-  console.log(JSON.stringify(event));
-})
-.on('error', function(err){
-  console.trace(err);
-});
+var freenode = irc.connect('irc.freenode.net', 'Blurp')
+	//include some plugins
+	.use(irc.pong, irc.names, irc.motd)
+	//fires when the servers sends the welcome message (RPL_WELCOME)
+	.on('welcome', function (msg) {
+		console.log(msg);
+		this.nick('pokey', 'pa$$word', function(err){
+			console.log('There was a problem setting your NICK:', err);
+		});
+	})
+	//fires after the server confirms password
+	.on('identified', function (nick) {
+		this.send('JOIN #node.js');
+	})
+	//fires only when YOUR nick changes
+	.on('nick', function (nick) {
+		console.log('Your nick is now:', nick);
+	})
+	.on('NOTICE', function (event) {
+		console.log('NOTICE:', event.params[1]);
+	})
+	.on('JOIN', function (event) {
+		console.log(event.nick, 'joined');
+	})
+	//from the `names` plugin.
+	.on('names', function (err, names) {
+		console.log(names);
+	})
+	//from the `motd` plugin.
+	.on('motd', function (event) {
+		console.log(this.motd);
+		console.log(this.support);
+	})
+;
 ```
 <br>
 <br>
@@ -98,36 +121,20 @@ needed and augment it with helper functions/properties needed.
 IRC does a `PING` - `PONG` game to verify the client is still alive. Use this
 plugin to automatically reply to the server's `PING`s and stay connected.
 
-#### irc.authenticate(nick, password, fullname)
-A simple helper to set the `nick` and optionally authenticate with a `password`
-and set the full name.
+#### irc.names
+Parses replies from a `NAMES` command and emits a `names` event with the
+results as an object.
 
-```javascript
-var irc = require("./connect");
+#### irc.motd
+Parses replies from a `NAMES` command and emits a `names` event with the
+results as an object.
 
-var freenode = irc.connect('irc.freenode.net')
-	.use(irc.pong)
-	.use(irc.authenticate('pokey', '123456789', 'Hokey Pokey'))
-;
+#### irc.nick(nick [,password [,onerror]])
+Sets a `NICK` with an optional password and a error callback.
 
-freenode.once('authenticated', function (result, name) {
-	if(result===true){
-		console.log('You are authenticated', name);
-	}
-	else {
-		console.log('Authentication failed', name);
-	}
-});
-```
 
-##### Event:'authenticated'
-Emitted after an authentication response is received (both success & failure).
-
-On success: The callback's first argument will be `true` and the second
-argument will be the authenticated `nick`.
-
-On failure: The callback's first argument will be one of the failure errors.
-`ERR_NONICKNAMEGIVEN`, `ERR_ERRONEUSNICKNAME`, `ERR_NICKNAMEINUSE`, `ERR_NICKCOLLISION`
+##### Event:'nick'
+Emitted anytime your nick is changed.
 
 <br>
 <br>
