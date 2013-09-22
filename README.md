@@ -46,8 +46,8 @@ var freenode = irc.connect('irc.freenode.net', 'Blurp')
 		console.log(event.nick, 'joined');
 	})
 	//from the `names` plugin.
-	.on('names', function (err, names) {
-		console.log(names);
+	.on('names', function (cname, names) {
+		console.log(cname, names);
 	})
 	//from the `motd` plugin.
 	.on('motd', function (event) {
