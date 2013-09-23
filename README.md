@@ -45,6 +45,10 @@ var freenode = irc.connect('irc.freenode.net', 'Blurp')
 	.on('JOIN', function (event) {
 		console.log(event.nick, 'joined');
 	})
+	.on('PRIVMSG', function (event) {
+		var params = event.params;
+		console.log('message from: '+event.nick, 'to: '+params[0], params[1]);
+	})
 	//from the `names` plugin.
 	.on('names', function (cname, names) {
 		console.log(cname, names);
@@ -66,6 +70,11 @@ event name. Numeric events (as defined by [RFC 1459](https://tools.ietf.org/html
 are converted to their string codes. The full list can be viewed in the
 [irc-replies](https://github.com/williamwicks/irc-replies/blob/master/replies.json)
 module.
+
+All events follow this distinct pattern:
+* UPPERCASE events are direct IRC events. They are always passed the parsed `event` object.
+* lowercase events are custom events from `irc-connect` or a pluggin.
+
 
 #### Event:'connect'
 #### Event:'close'
