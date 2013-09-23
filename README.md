@@ -21,7 +21,7 @@ npm install irc-connect
 #### Use it
 ```javascript
 var irc = require("irc-connect");
-var freenode = irc.connect('irc.freenode.net', 'Blurp')
+var freenode = irc.connect('irc.freenode.net', ' Werner Brandes')
 	//include some plugins
 	.use(irc.pong, irc.names, irc.motd)
 	//fires when the servers sends the welcome message (RPL_WELCOME)
