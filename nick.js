@@ -65,7 +65,6 @@ module.exports = {
 
 		client.once('RPL_WELCOME', function(event) {
 			setNick(event.params[0]);
-			this.emit('welcome', event.params[1]);
 		});
 
 		client.on('NOTICE', function (event) {

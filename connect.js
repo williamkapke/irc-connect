@@ -10,13 +10,6 @@ debug.out = require("debug")('irc:connect-out');
 debug.raw = require("debug")('irc:connect-raw');
 debug.parsed = require("debug")('irc:connect-parsed');
 
-function send(){
-	if(debug.out.enabled) debug.out(Array.prototype.join.call(arguments, ''));
-	for(var i=0;i<arguments.length;i++)
-		this.write(arguments[i]);
-	this.write('\n');
-}
-
 function prefix(c){
 	if(c.current!==':') return;
 
@@ -62,10 +55,19 @@ function getParam(c, length){
 	return c.advance(1).consume(/[^\0\r\n ][^\0\r\n :]*/g);
 }
 
+function Client(){
+	EventEmitter.call(this);
 
-var irc = module.exports = {
-	_temp:function () {
-		return ('node'+ (+new Date+'').substr(-5));
+	this.connected = false;
+	this.support = {};
+	this.use(require('./nick'));
+}
+Client.prototype = {
+	constructor: Client,
+	use: function(){
+		for(var i=0;i<arguments.length;i++)
+			arguments[i].__irc(this);
+		return this;
 	},
 	connect: function(host, options){
 		if(typeof options==='string')
@@ -75,21 +77,20 @@ var irc = module.exports = {
 		if(!options.port) options.port = 6667;
 		options.host = host;
 
-		var client = new EventEmitter();
-		client.support = {};
-
-		client.use = function(){
-			for(var i=0;i<arguments.length;i++)
-				arguments[i].__irc(this);
-			return this;
-		}
-
+		var client = this;
 		client.socket = net.connect(options, function() {
-			client.send = send.bind(this);
+			client.connected = true;
+			client.write = this.write.bind(this);
 			debug('Client connected');
+
+			var temp = irc._temp();
+			client.send('NICK ', temp);
+			client.send('USER irc-cnct 0 * :', options.name||'irc-connect user');
+
 			client.emit('connect');
 		})
 		.on('close', function (data) {
+			client.connected = false;
 			debug('Disconnected from server');
 			client.emit('close');
 		})
@@ -98,32 +99,52 @@ var irc = module.exports = {
 			client.emit('error', err);
 		});
 
-		client.once('connect', function onconnect() {
-			var temp = irc._temp();
-			this.send('NICK ', temp);
-			this.send('USER irc-cnct 0 * :', options.name||'irc-connect user');
+		client.once('RPL_WELCOME', function(event) {
+			this.emit('welcome', event.params[1]);
 		});
-		client.use(require('./nick'));
 
+		eachline(client.socket, client.ondata.bind(client));
+		return client;
+	},
+	send: function send(){
+		if(!this.connected) return;
+		if(debug.out.enabled) debug.out(Array.prototype.join.call(arguments, ''));
+		for(var i=0;i<arguments.length;i++)
+			this.write(arguments[i]);
+		this.write('\n');
+	},
+	quit: function(msg){
+		this.send('QUIT :' + (msg||''));
+	},
+	ondata: function(data){
+		if(!data.length) return;
+		debug.raw(data);
+		var event = parse(data);
 
-		eachline(client.socket, function(data){
-			if(!data.length) return;
-			debug.raw(data);
-			var event = parse(data);
+		if(!event){
+			return console.error('unmatched data:\n'+data);
+		}
 
-			if(!event){
-				return console.error('unmatched data:\n'+data);
-			}
+		var code = reply[event.command];
+		if(code) event.command = code;
 
-			var code = reply[event.command];
-			if(code) event.command = code;
+		if(debug.parsed.enabled)
+			debug.parsed(JSON.stringify(event));
 
-			if(debug.parsed.enabled)
-				debug.parsed(JSON.stringify(event));
+		this.emit(event.command, event);
+		this.emit('data', event, data);
+	}
+}
+Client.prototype.__proto__ = EventEmitter.prototype;
 
-			client.emit(event.command, event);
-			client.emit('data', event, data);
-		});
+var irc = module.exports = {
+	_temp:function () {
+		return ('node'+ (+new Date+'').substr(-5));
+	},
+	Client: Client,
+	connect: function(host, options){
+		var client = new Client();
+		client.connect(host, options);
 		return client;
 	},
 	parse: parse,
