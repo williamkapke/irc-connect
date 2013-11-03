@@ -1,4 +1,3 @@
-
 var reply = require('irc-replies');
 var eachline = require("eachline");
 var net = require('net');
@@ -46,13 +45,14 @@ function parse(line){
 
 function getParam(c, length){
 	if(c.current!==' ') return;
+	c.advance(1);
 
-	if(c.peek(1)===':')
-		return c.advance(2).consume(/.+/g);
+	if(c.current===':')
+		return c.advance(1).done? [''] : c.consume(/.+/g);
 	if(length===14)
-		return c.advance(1).consume(/.+/g);
+		return c.consume(/.+/g);
 
-	return c.advance(1).consume(/[^\0\r\n ][^\0\r\n :]*/g);
+	return c.consume(/[^ ]*/g);
 }
 
 function Client(){

@@ -1,10 +1,10 @@
 {
   "name": "irc-connect",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Minimal IRC connection that simply emits event objects. Plugin modules can do the rest.",
   "main": "connect.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "make test"
   },
   "repository": {
     "type": "git",
@@ -26,6 +26,10 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/williamwicks/irc-connect/issues"
+  },
+  "devDependencies": {
+	  "mocha": "~1.14.0",
+	  "should": "~2.0.2"
   },
   "dependencies": {
     "debug": "~0",
