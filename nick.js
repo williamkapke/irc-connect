@@ -1,5 +1,30 @@
+function sendNick(nick,cb,authd){
+	var auth_errors = [
+		'ERR_NONICKNAMEGIVEN',
+		'ERR_ERRONEUSNICKNAME',
+		'ERR_NICKNAMEINUSE',
+		'ERR_NICKCOLLISION',
+		'ERR_UNAVAILRESOURCE',
+		'ERR_ALREADYREGISTRED' //not a typo
+	];
 
-var auth_errors = 'ERR_NONICKNAMEGIVEN ERR_ERRONEUSNICKNAME ERR_NICKNAMEINUSE ERR_NICKCOLLISION ERR_UNAVAILRESOURCE ERR_ALREADYREGISTRED'.split(' ');
+	function error(data){
+		if(cb) cb.call(this, data.command, nick);
+		removeListeners.call(this);
+	}
+
+	function removeListeners() {
+		for(var i=0;i<auth_errors.length;i++)
+			this.removeListener(auth_errors[i], error);
+		if('function' === typeof authd) this.removeListener('NOTICE', authd);
+	}
+
+	//attach error listeners
+	for(var i=0;i<auth_errors.length;i++)
+		this.once(auth_errors[i], error);
+
+	this.send('NICK ', nick);
+}
 
 function auth(nick, pass, cb) {
 	if(typeof pass === 'function')
@@ -24,22 +49,7 @@ function auth(nick, pass, cb) {
 
 	this.on('NOTICE', authd);
 
-	function error(data){
-		if(cb) cb.call(this, data.command, nick);
-		removeListeners.call(this);
-	}
-
-	function removeListeners() {
-		for(var i=0;i<auth_errors.length;i++)
-			this.removeListener(auth_errors[i], error);
-		this.removeListener('NOTICE', authd);
-	}
-
-	//attach error listeners
-	for(var i=0;i<auth_errors.length;i++)
-		this.once(auth_errors[i], error);
-
-	this.send('NICK ', nick);
+	sendNick(nick,cb,authd);
 }
 
 module.exports = {
@@ -53,9 +63,15 @@ module.exports = {
 		})
 		.bind(client);
 
+		client.identify = function (new_nick, pass, cb) {
+			if(!(new_nick && pass)) return;
+			auth.call(this, new_nick, pass, cb);
+		}
+
 		client.nick = function (new_nick, pass, cb) {
 			if(!new_nick) return nick;
-			auth.call(this, new_nick, pass, cb);
+			if(pass) client.identify(new_nick, pass, cb);
+			else sendNick.call(this, new_nick, cb);
 		}
 
 		client.on('NICK', function (event) {
