@@ -21,7 +21,21 @@ npm install irc-connect
 #### Use it
 ```javascript
 var irc = require("irc-connect");
-var freenode = irc.connect('irc.freenode.net', ' Werner Brandes')
+var ircOptions = {
+	//[port] if not provided defaults to 6667 (or if secure, 6697)
+	port: 6667,
+	//[secure] can be true/false or 'semi' for lazy CA checking (self-signed, obscure CA, etc)
+	secure: false,
+	//[nick] is the desired nickname, if not provided one will be generated (you can always use nick() later)
+	nick: 'WernerB',
+	//[realname] is the "real name" shown in WHOIS results
+	realname: 'Werner Brandes',
+	//[ident] is the user part of your hostmask (before the @), if not provided 'irc-cnct' will be used
+	// note this may either be prefixed with a ~ on some servers, if you don't have an 'identd' service
+	// if you do have such a service, most servers will use what is obtained there and ignore this
+	ident: 'wbrandes'
+}
+var freenode = irc.connect('irc.freenode.net', ircOptions)
 	//include some plugins
 	.use(irc.pong, irc.names, irc.motd)
 	//fires when the servers sends the welcome message (RPL_WELCOME)
@@ -135,11 +149,14 @@ Parses replies from a `NAMES` command and emits a `names` event with the
 results as an object.
 
 #### irc.motd
-Parses replies from a `NAMES` command and emits a `names` event with the
+Parses replies from a `MOTD` command and emits a `motd` event with the
 results as an object.
 
 #### irc.nick(nick [,password [,onerror]])
 Sets a `NICK` with an optional password and a error callback.
+This only works properly if your server has a NickServ or similar service which
+requires a password to register your nick, and sends a success NOTICE.
+On a vanilla ircd you may need to send your own NICK command, the events will still work the same.
 
 
 ##### Event:'nick'
