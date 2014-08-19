@@ -1,6 +1,7 @@
 var reply = require('irc-replies');
 var eachline = require("eachline");
 var net = require('net');
+var tls = require('tls');
 var Consumer = require("consumer");
 var EventEmitter = require("events").EventEmitter;
 
@@ -55,11 +56,29 @@ function getParam(c, length){
 	return c.consume(/[^ ]*/g);
 }
 
-function Client(){
-	EventEmitter.call(this);
+var parseOptions = function(options){
+	options = ('object' === typeof options)?options:{}
+	options.nick = options.nick || irc._temp();
+	options.ident = options.ident || 'irc-cnct';
+	options.realname = options.realname || 'irc-connect user';
+	options.lazyCA = ('semi' === options.secure)
+	options.secure = !!options.secure || false;
+	options.connection = {
+		host: options.host || 'localhost',
+		port: +options.port || (options.secure?6697:6667)
+	}
+	if(options.secure && options.lazyCA) options.connection.rejectUnauthorized = false
+	delete(options.host)
+	delete(options.port)
+	return options
+}
 
+function Client(options){
+	EventEmitter.call(this);
+	this.options = parseOptions(options)
 	this.connected = false;
 	this.support = {};
+	debug('Client created')
 	this.use(require('./nick'));
 }
 Client.prototype = {
@@ -69,23 +88,16 @@ Client.prototype = {
 			arguments[i].__irc(this);
 		return this;
 	},
-	connect: function(host, options){
-		if(typeof options==='string')
-			options = { name: options };
-		else if(!options) options = {};
-
-		if(!options.port) options.port = 6667;
-		options.host = host;
-
+	connect: function(){
 		var client = this;
-		client.socket = net.connect(options, function() {
+		var opt = client.options
+		client.socket = (opt.secure?tls:net).connect(opt.connection, function() {
+			debug('Client connected');
 			client.connected = true;
 			client.write = this.write.bind(this);
-			debug('Client connected');
 
-			var temp = irc._temp();
-			client.send('NICK ', temp);
-			client.send('USER irc-cnct 0 * :', options.name||'irc-connect user');
+			client.send('NICK ', opt.nick);
+			client.send('USER ', opt.ident, ' 0 * :', opt.realname);
 
 			client.emit('connect');
 		})
@@ -142,9 +154,17 @@ var irc = module.exports = {
 		return ('node'+ (+new Date+'').substr(-5));
 	},
 	Client: Client,
+	create: function(options){
+		var client = new Client(options);
+		return client;
+	},
 	connect: function(host, options){
-		var client = new Client();
-		client.connect(host, options);
+		options = options || {}
+		options = ('object' === typeof options)?options:{ realname: options }
+		if(host) options.host = host
+		if('object' === typeof options){options = parseOptions(options)}
+		var client = irc.create(options)
+		client.connect();
 		return client;
 	},
 	parse: parse,
