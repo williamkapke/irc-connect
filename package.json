@@ -1,6 +1,6 @@
 {
   "name": "irc-connect",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "Minimal IRC connection that simply emits event objects. Plugin modules can do the rest.",
   "main": "connect.js",
   "scripts": {
