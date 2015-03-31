@@ -1,6 +1,7 @@
 
 var irc = require('../connect');
 var parse = irc.parse;
+var should = require('should');
 
 describe("Parse server responses", function(){
 

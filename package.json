@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/williamwicks/irc-connect.git"
+    "url": "https://github.com/williamkapke/irc-connect.git"
   },
   "keywords": [
     "irc",
@@ -22,10 +22,10 @@
     "events",
     "emit"
   ],
-  "author": "William Wicks",
+  "author": "William Kapke",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/williamwicks/irc-connect/issues"
+    "url": "https://github.com/williamkapke/irc-connect/issues"
   },
   "devDependencies": {
 	  "mocha": "~1.14.0",
@@ -33,8 +33,8 @@
   },
   "dependencies": {
     "debug": "~0",
-    "consumer": "~1",
-    "irc-replies": "~2",
-    "eachline": "~1"
+    "consumer": "^1",
+    "irc-replies": "^2",
+    "eachline": "^3"
   }
 }

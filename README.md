@@ -11,7 +11,7 @@ Plugin modules can (and should) do the rest.
 
   Now you can whip up a lightweight bot without all the baggage.
 
-Channel support can be added with the [irc-channels](https://github.com/williamwicks/irc-channels) module!
+Channel support can be added with the [irc-channels](https://github.com/williamkapke/irc-channels) module!
 
 #### Install it
 ```
@@ -82,7 +82,7 @@ var freenode = irc.connect('irc.freenode.net', ircOptions)
 All data from the server is parsed and emitted using the data's `command` as the
 event name. Numeric events (as defined by [RFC 1459](https://tools.ietf.org/html/rfc1459#section-6))
 are converted to their string codes. The full list can be viewed in the
-[irc-replies](https://github.com/williamwicks/irc-replies/blob/master/replies.json)
+[irc-replies](https://github.com/williamkapke/irc-replies/blob/master/replies.json)
 module.
 
 All events follow this distinct pattern:
