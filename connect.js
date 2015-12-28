@@ -68,8 +68,6 @@ var parseOptions = function(options){
 		port: +options.port || (options.secure?6697:6667)
 	}
 	if(options.secure && options.lazyCA) options.connection.rejectUnauthorized = false
-	delete(options.host)
-	delete(options.port)
 	return options
 }
 
