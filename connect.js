@@ -63,11 +63,6 @@ var parseOptions = function(options){
 	options.realname = options.realname || 'irc-connect user';
 	options.lazyCA = ('semi' === options.secure);
 	options.secure = !!options.secure || false;
-	options.connection = {
-		get host(){ return options.host || 'localhost'; },
-		get port(){ return +options.port || (options.secure?6697:6667) },
-		get rejectUnauthorized(){ return !!(options.secure && options.lazyCA); }
-	};
 	return options;
 };
 
@@ -89,7 +84,12 @@ Client.prototype = {
 	connect: function(){
 		var client = this;
 		var opt = client.options
-		client.socket = (opt.secure?tls:net).connect(opt.connection, function() {
+		var connection = {
+			host: options.host || 'localhost',
+			port: +options.port || (options.secure?6697:6667),
+			rejectUnauthorized: !!(options.secure && options.lazyCA)
+		};
+		client.socket = (opt.secure?tls:net).connect(connection, function() {
 			debug('Client connected');
 			client.connected = true;
 			client.write = this.write.bind(this);
