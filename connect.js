@@ -15,7 +15,7 @@ function prefix(c){
 
 	var p = {
 		nick: c.advance(1).consume(/[^ !]+/g)[0]
-	}
+	};
 	if(c.current==='!'){
 		p.user = c.advance(1).consume(/[^ @]+/g)[0];
 		if(c.current==='@'){
@@ -57,26 +57,26 @@ function getParam(c, length){
 }
 
 var parseOptions = function(options){
-	options = ('object' === typeof options)?options:{}
+	options = ('object' === typeof options)? options : {};
 	options.nick = options.nick || irc._temp();
 	options.ident = options.ident || 'irc-cnct';
 	options.realname = options.realname || 'irc-connect user';
-	options.lazyCA = ('semi' === options.secure)
+	options.lazyCA = ('semi' === options.secure);
 	options.secure = !!options.secure || false;
 	options.connection = {
-		host: options.host || 'localhost',
-		port: +options.port || (options.secure?6697:6667)
-	}
-	if(options.secure && options.lazyCA) options.connection.rejectUnauthorized = false
-	return options
-}
+		get host(){ return options.host || 'localhost'; },
+		get port(){ return +options.port || (options.secure?6697:6667) },
+		get rejectUnauthorized(){ return !!(options.secure && options.lazyCA); }
+	};
+	return options;
+};
 
 function Client(options){
 	EventEmitter.call(this);
 	this.options = parseOptions(options)
 	this.connected = false;
 	this.support = {};
-	debug('Client created')
+	debug('Client created');
 	this.use(require('./nick'));
 }
 Client.prototype = {
@@ -144,7 +144,7 @@ Client.prototype = {
 		this.emit(event.command, event);
 		this.emit('data', event, data);
 	}
-}
+};
 Client.prototype.__proto__ = EventEmitter.prototype;
 
 var irc = module.exports = {
@@ -157,11 +157,10 @@ var irc = module.exports = {
 		return client;
 	},
 	connect: function(host, options){
-		options = options || {}
+		options = options || {};
 		options = ('object' === typeof options)?options:{ realname: options }
-		if(host) options.host = host
-		if('object' === typeof options){options = parseOptions(options)}
-		var client = irc.create(options)
+		if(host) options.host = host;
+		var client = irc.create(options);
 		client.connect();
 		return client;
 	},
@@ -169,4 +168,4 @@ var irc = module.exports = {
 	get pong(){ return require('./plugins/pong') },
 	get names(){ return require('./plugins/names') },
 	get motd(){ return require('./plugins/motd') }
-}
+};
