@@ -49,7 +49,7 @@ function auth(nick, pass, cb) {
 
 	this.on('NOTICE', authd);
 
-	sendNick(nick,cb,authd);
+	sendNick.call(this,nick,cb,authd);
 }
 
 module.exports = {

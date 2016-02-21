@@ -83,11 +83,11 @@ Client.prototype = {
 	},
 	connect: function(){
 		var client = this;
-		var opt = client.options
+		var opt = client.options;
 		var connection = {
-			host: options.host || 'localhost',
-			port: +options.port || (options.secure?6697:6667),
-			rejectUnauthorized: !!(options.secure && options.lazyCA)
+			host: opt.host || 'localhost',
+			port: +opt.port || (opt.secure?6697:6667),
+			rejectUnauthorized: !!(opt.secure && opt.lazyCA)
 		};
 		client.socket = (opt.secure?tls:net).connect(connection, function() {
 			debug('Client connected');
